@@ -6,7 +6,7 @@ import type { TransactionManager } from "@/infrastructure/db/transaction-manager
 import type { EventPublisher } from "@/infrastructure/messaging/publisher/base.js";
 import { generateUserChanges } from "@/domain/user/diff.js";
 import { createUserCreatedEvent, createUserUpdatedEvent } from "@/domain/user/events/schema.js";
-import { createUserUpdate, type CreateUser, type User, type UserUpdate } from "@/domain/user/model.js";
+import { type CreateUser, type User, type UserUpdate } from "@/domain/user/model.js";
 import {
   validateCreateUserRequest,
   validateDeleteUserRequest,
@@ -72,16 +72,11 @@ export class UserService<TManager extends TransactionManager<TType>, TType exten
       const user = await validatePatchUserRequest(ctx, userId, email, name, this.userRepository);
 
       // Build UserUpdate from provided fields
-      const userUpdate: UserUpdate = createUserUpdate();
-      if (email !== undefined) {
-        userUpdate.email = email;
-      }
-      if (name !== undefined) {
-        userUpdate.name = name;
-      }
-      if (age !== undefined) {
-        userUpdate.age = age;
-      }
+      const userUpdate: UserUpdate = {
+        email,
+        name,
+        age,
+      };
 
       // Generate changes dictionary for event
       const changes = generateUserChanges(userUpdate, user);

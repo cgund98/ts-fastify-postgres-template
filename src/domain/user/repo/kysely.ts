@@ -3,7 +3,7 @@ import type { UserRepository } from "@/domain/user/repo/base.js";
 import type { KyselyContext } from "@/infrastructure/db/kysely/index.js";
 
 import { DatabaseError, NoFieldsToUpdateError } from "@/infrastructure/db/exceptions.js";
-import { buildUpdateValues } from "@/infrastructure/db/update-mapper.js";
+import { buildUpdateValuesFromObject } from "@/infrastructure/db/update-mapper.js";
 import { getLogger } from "@/observability/logging.js";
 
 const logger = getLogger("KyselyUserRepository");
@@ -105,7 +105,7 @@ export class KyselyUserRepository implements UserRepository<KyselyContext> {
 
   async updatePartial(ctx: KyselyContext, userId: string, update: UserUpdate): Promise<User> {
     try {
-      const values = buildUpdateValues(update as unknown as Parameters<typeof buildUpdateValues>[0]);
+      const values = buildUpdateValuesFromObject(update);
       if (Object.keys(values).length === 0) {
         throw new NoFieldsToUpdateError();
       }
