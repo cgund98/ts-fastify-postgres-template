@@ -171,7 +171,6 @@ fastify-postgres-template/
 
 For detailed setup instructions, see the [Development Guide](docs/DEVELOPMENT.md).
 
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these guidelines:

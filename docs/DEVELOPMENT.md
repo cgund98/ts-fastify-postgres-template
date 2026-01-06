@@ -212,4 +212,3 @@ pnpm run db:generate
 ```
 
 This will update `src/infrastructure/db/kysely/schema.ts` with type-safe definitions matching your database schema.
-

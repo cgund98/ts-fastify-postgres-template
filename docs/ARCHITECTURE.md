@@ -113,4 +113,3 @@ This template implements a **User Management System** to demonstrate real-world 
 - **Transaction Management**: All operations use application-level transactions
 - **Business Rule Enforcement**: Prevents invalid states (e.g., duplicate emails)
 - **Domain Events**: Decoupled communication between services via events
-

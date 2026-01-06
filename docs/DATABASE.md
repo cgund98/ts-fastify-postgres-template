@@ -19,6 +19,7 @@ make migrate
 ```
 
 Migrations are located in `resources/db/migrations/` and follow the naming convention:
+
 - `{version}_{description}.up.sql` - Migration up
 - `{version}_{description}.down.sql` - Migration down
 
@@ -36,6 +37,7 @@ pnpm run db:generate
 This will update `src/infrastructure/db/kysely/schema.ts` with type-safe definitions matching your database schema.
 
 The generated types ensure:
+
 - **Compile-time type safety**: TypeScript will catch type errors at compile time
 - **Auto-completion**: Your IDE will provide autocomplete for database columns
 - **Refactoring safety**: Renaming columns will be caught by the type system
@@ -46,16 +48,12 @@ Kysely provides a type-safe SQL query builder. Example:
 
 ```typescript
 // Type-safe query with autocomplete
-const user = await db
-  .selectFrom("users")
-  .selectAll()
-  .where("email", "=", email)
-  .executeTakeFirst();
+const user = await db.selectFrom("users").selectAll().where("email", "=", email).executeTakeFirst();
 ```
 
 The query builder ensures that:
+
 - Table names are valid
 - Column names exist
 - Types match between columns and values
 - Joins are type-safe
-

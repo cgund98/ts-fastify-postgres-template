@@ -11,6 +11,7 @@ This directory contains the AWS CDK code for provisioning the infrastructure nee
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    cd resources/infra/cdk
    npm install
@@ -59,4 +60,3 @@ Or specify them in the stack props in `bin/app.ts`.
 - Adjust resource sizes (instance types, memory, CPU) based on your needs
 - Consider enabling deletion protection for production databases
 - Review and adjust security group rules for your use case
-

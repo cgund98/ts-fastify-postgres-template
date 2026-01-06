@@ -18,4 +18,3 @@ test("Stack creates expected resources", () => {
     Description: "Name of this CDK stack",
   });
 });
-

@@ -62,4 +62,3 @@ Both use Zod for event serialization, but TypeScript provides additional compile
 // TypeScript - event types are inferred from Zod schemas
 export type UserCreatedEvent = z.infer<typeof UserCreatedEventSchema>;
 ```
-
