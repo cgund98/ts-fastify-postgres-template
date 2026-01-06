@@ -16,12 +16,19 @@ export const paginatedResponseSchema = (itemSchema: TSchema): TSchema =>
     totalPages: Type.Integer(),
   });
 
-export function createPaginatedResponse<T>(
-  items: T[],
-  page: number,
-  pageSize: number,
-  total: number
-): PaginatedResponse<T> {
+export interface CreatePaginatedResponseParams<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export function createPaginatedResponse<T>({
+  items,
+  page,
+  pageSize,
+  total,
+}: CreatePaginatedResponseParams<T>): PaginatedResponse<T> {
   const totalPages = total > 0 ? Math.ceil(total / pageSize) : 0;
 
   return {

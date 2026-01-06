@@ -42,8 +42,8 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
       const [limit, offset] = pageToLimitOffset(page, pageSize);
       const [users, total] = await service.listUsers(limit, offset);
 
-      return createPaginatedResponse(
-        users.map((user) => ({
+      return createPaginatedResponse({
+        items: users.map((user) => ({
           id: user.id,
           email: user.email,
           name: user.name,
@@ -53,8 +53,8 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
         })),
         page,
         pageSize,
-        total
-      );
+        total,
+      });
     }
   );
 
@@ -133,11 +133,14 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
       const service = getUserService(getEventPublisher());
 
       // Fields are optional in the schema, so they'll be undefined if not provided
-      const email = request.body.email;
-      const name = request.body.name;
-      const age = request.body.age;
+      const { email, name, age } = request.body;
 
-      const user = await service.patchUser(request.params.userId, email, name, age);
+      const user = await service.patchUser({
+        userId: request.params.userId,
+        email,
+        name,
+        age,
+      });
 
       return {
         id: user.id,

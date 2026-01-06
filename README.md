@@ -120,7 +120,7 @@ fastify-postgres-template/
 │   │   └── test/                   # CDK unit tests
 │   └── scripts/                    # Utility scripts
 │
-├── eslint.config.mjs               # ESLint flat config
+├── eslint.config.ts                # ESLint flat config
 ├── Makefile
 ├── package.json
 ├── tsconfig.json

@@ -31,7 +31,12 @@ export class UserService<TManager extends TransactionManager<TType>, TType exten
   async createUser(email: string, name: string, age: number | null = null): Promise<User> {
     return this.transactionManager.transaction(async (ctx) => {
       // Validate request
-      await validateCreateUserRequest(ctx, email, name, this.userRepository);
+      await validateCreateUserRequest({
+        ctx,
+        email,
+        name,
+        userRepository: this.userRepository,
+      });
 
       // Generate UUID and timestamps
       const userId = randomUUID();
@@ -61,15 +66,26 @@ export class UserService<TManager extends TransactionManager<TType>, TType exten
     });
   }
 
-  async patchUser(
-    userId: string,
-    email?: RequiredOrUnset<string>,
-    name?: RequiredOrUnset<string>,
-    age?: OptionalOrUnset<number>
-  ): Promise<User> {
+  async patchUser({
+    userId,
+    email,
+    name,
+    age,
+  }: {
+    userId: string;
+    email?: RequiredOrUnset<string>;
+    name?: RequiredOrUnset<string>;
+    age?: OptionalOrUnset<number>;
+  }): Promise<User> {
     return this.transactionManager.transaction(async (ctx) => {
       // Validate request and get user
-      const user = await validatePatchUserRequest(ctx, userId, email, name, this.userRepository);
+      const user = await validatePatchUserRequest({
+        ctx,
+        userId,
+        email,
+        name,
+        userRepository: this.userRepository,
+      });
 
       // Build UserUpdate from provided fields
       const userUpdate: UserUpdate = {

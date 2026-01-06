@@ -16,12 +16,19 @@ function validateName(name: RequiredOrUnset<string>): void {
   }
 }
 
-async function validateEmailNotDuplicate(
-  userRepository: UserRepository,
-  ctx: DatabaseContext,
-  email: RequiredOrUnset<string>,
-  currentEmail: string
-): Promise<void> {
+interface ValidateEmailNotDuplicateParams {
+  userRepository: UserRepository;
+  ctx: DatabaseContext;
+  email: RequiredOrUnset<string>;
+  currentEmail: string;
+}
+
+async function validateEmailNotDuplicate({
+  userRepository,
+  ctx,
+  email,
+  currentEmail,
+}: ValidateEmailNotDuplicateParams): Promise<void> {
   if (email === undefined) {
     return;
   }
@@ -34,12 +41,19 @@ async function validateEmailNotDuplicate(
   }
 }
 
-export async function validateCreateUserRequest(
-  ctx: DatabaseContext,
-  email: string,
-  name: string,
-  userRepository: UserRepository
-): Promise<void> {
+export interface ValidateCreateUserRequestParams {
+  ctx: DatabaseContext;
+  email: string;
+  name: string;
+  userRepository: UserRepository;
+}
+
+export async function validateCreateUserRequest({
+  ctx,
+  email,
+  name,
+  userRepository,
+}: ValidateCreateUserRequestParams): Promise<void> {
   // Validate name
   if (!name.trim()) {
     throw new ValidationError("Name cannot be empty", "name");
@@ -52,13 +66,21 @@ export async function validateCreateUserRequest(
   }
 }
 
-export async function validatePatchUserRequest(
-  ctx: DatabaseContext,
-  userId: string,
-  email: RequiredOrUnset<string>,
-  name: RequiredOrUnset<string>,
-  userRepository: UserRepository
-): Promise<User> {
+export interface ValidatePatchUserRequestParams {
+  ctx: DatabaseContext;
+  userId: string;
+  email: RequiredOrUnset<string>;
+  name: RequiredOrUnset<string>;
+  userRepository: UserRepository;
+}
+
+export async function validatePatchUserRequest({
+  ctx,
+  userId,
+  email,
+  name,
+  userRepository,
+}: ValidatePatchUserRequestParams): Promise<User> {
   // Validate user exists
   const user = await userRepository.getById(ctx, userId);
   if (user === null) {
@@ -69,7 +91,12 @@ export async function validatePatchUserRequest(
   validateName(name);
 
   // Validate email if provided
-  await validateEmailNotDuplicate(userRepository, ctx, email, user.email);
+  await validateEmailNotDuplicate({
+    userRepository,
+    ctx,
+    email,
+    currentEmail: user.email,
+  });
 
   return user;
 }

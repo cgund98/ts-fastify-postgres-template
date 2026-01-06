@@ -152,7 +152,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getByEmail).mockResolvedValue(null);
       vi.mocked(mockUserRepository.updatePartial).mockResolvedValue(updatedUser);
 
-      const result = await userService.patchUser(existingUser.id, "newemail@example.com");
+      const result = await userService.patchUser({ userId: existingUser.id, email: "newemail@example.com" });
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
@@ -178,7 +178,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.updatePartial).mockResolvedValue(updatedUser);
 
-      const result = await userService.patchUser(existingUser.id, undefined, "New Name");
+      const result = await userService.patchUser({ userId: existingUser.id, name: "New Name" });
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
@@ -203,7 +203,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.updatePartial).mockResolvedValue(updatedUser);
 
-      const result = await userService.patchUser(existingUser.id, undefined, undefined, 35);
+      const result = await userService.patchUser({ userId: existingUser.id, age: 35 });
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
@@ -226,7 +226,12 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getByEmail).mockResolvedValue(null);
       vi.mocked(mockUserRepository.updatePartial).mockResolvedValue(updatedUser);
 
-      const result = await userService.patchUser(existingUser.id, "newemail@example.com", "New Name", 35);
+      const result = await userService.patchUser({
+        userId: existingUser.id,
+        email: "newemail@example.com",
+        name: "New Name",
+        age: 35,
+      });
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
@@ -243,7 +248,9 @@ describe("UserService", () => {
     it("should throw NotFoundError when user does not exist", async () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(null);
 
-      await expect(userService.patchUser("non-existent-id", "newemail@example.com")).rejects.toThrow(NotFoundError);
+      await expect(userService.patchUser({ userId: "non-existent-id", email: "newemail@example.com" })).rejects.toThrow(
+        NotFoundError
+      );
       expect(mockUserRepository.updatePartial).not.toHaveBeenCalled();
       expect(mockEventPublisher.publish).not.toHaveBeenCalled();
     });
@@ -252,7 +259,7 @@ describe("UserService", () => {
       const existingUser = createMockUser();
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
 
-      await expect(userService.patchUser(existingUser.id, undefined, "")).rejects.toThrow(ValidationError);
+      await expect(userService.patchUser({ userId: existingUser.id, name: "" })).rejects.toThrow(ValidationError);
       expect(mockUserRepository.updatePartial).not.toHaveBeenCalled();
     });
 
@@ -263,7 +270,9 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.getByEmail).mockResolvedValue(otherUser);
 
-      await expect(userService.patchUser(existingUser.id, "other@example.com")).rejects.toThrow(DuplicateError);
+      await expect(userService.patchUser({ userId: existingUser.id, email: "other@example.com" })).rejects.toThrow(
+        DuplicateError
+      );
       expect(mockUserRepository.updatePartial).not.toHaveBeenCalled();
     });
 
@@ -272,7 +281,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.updatePartial).mockRejectedValue(new NoFieldsToUpdateError());
 
-      const result = await userService.patchUser(existingUser.id);
+      const result = await userService.patchUser({ userId: existingUser.id });
 
       expect(result).toEqual(existingUser);
       expect(mockEventPublisher.publish).not.toHaveBeenCalled();
@@ -283,7 +292,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getById).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.updatePartial).mockRejectedValue(new NoFieldsToUpdateError());
 
-      await userService.patchUser(existingUser.id);
+      await userService.patchUser({ userId: existingUser.id });
 
       expect(mockEventPublisher.publish).not.toHaveBeenCalled();
     });
@@ -294,7 +303,7 @@ describe("UserService", () => {
       vi.mocked(mockUserRepository.getByEmail).mockResolvedValue(existingUser);
       vi.mocked(mockUserRepository.updatePartial).mockRejectedValue(new NoFieldsToUpdateError());
 
-      const result = await userService.patchUser(existingUser.id, existingUser.email);
+      const result = await userService.patchUser({ userId: existingUser.id, email: existingUser.email });
 
       expect(result).toEqual(existingUser);
       // Should not throw DuplicateError because it's the same user's email
