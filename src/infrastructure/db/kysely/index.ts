@@ -9,7 +9,7 @@
  */
 
 export type { DB } from "./schema.js";
-export { KyselyContext, getKyselyDb, isKyselyContext } from "./context.js";
+export { KyselyContext, isKyselyContext } from "./context.js";
 export type { KyselyContextType } from "./context.js";
 export { KyselyDatabasePool } from "./pool.js";
 export type { Database } from "./pool.js";

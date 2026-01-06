@@ -1,5 +1,3 @@
-import type { DatabaseContext } from "@/infrastructure/db/context.js";
-
 import { getSettings, type Settings } from "@/config/settings.js";
 import { KyselyUserRepository } from "@/domain/user/repo/kysely.js";
 import { UserService } from "@/domain/user/service.js";
@@ -29,13 +27,8 @@ export function getEventPublisher(): EventPublisher {
   return new SNSPublisher(settings, topicArn);
 }
 
-export function getTransactionManager<TType extends string>(ctx: DatabaseContext<TType>): TransactionManager<TType> {
-  return new TransactionManager(ctx);
-}
-
-export function getUserService(eventPublisher: EventPublisher): UserService<"kysely"> {
-  const ctx = kyselyDatabasePool.getContext();
-  const txManager = getTransactionManager(ctx);
+export function getUserService(eventPublisher: EventPublisher): UserService<TransactionManager<"kysely">> {
+  const txManager = new TransactionManager(getDatabaseContext());
   const userRepository = new KyselyUserRepository();
   return new UserService(txManager, eventPublisher, userRepository);
 }

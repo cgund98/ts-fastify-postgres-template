@@ -8,31 +8,31 @@ import { NotFoundError } from "@/domain/exceptions.js";
 import { getEventPublisher, getUserService } from "@/presentation/deps.js";
 import { createPaginatedResponse, pageToLimitOffset, paginatedResponseSchema } from "@/presentation/pagination.js";
 import {
-  userCreateRequestSchema,
-  userPatchRequestSchema,
-  userResponseSchema,
+  UserCreateRequestSchema,
+  UserPatchRequestSchema,
+  UserResponseSchema,
   type UserResponse,
 } from "@/presentation/user/schema.js";
 
-const listUsersQuerySchema = Type.Object({
+const ListUsersQuerySchema = Type.Object({
   page: Type.Optional(Type.Integer({ minimum: 1 })),
   pageSize: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
 });
 
-const userIdParamsSchema = Type.Object({
+const UserIdParamsSchema = Type.Object({
   userId: Type.String({ format: "uuid" }),
 });
 
 export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> = async (fastify) => {
   // GET /users - List users with pagination
   fastify.get<{
-    Querystring: Static<typeof listUsersQuerySchema>;
+    Querystring: Static<typeof ListUsersQuerySchema>;
   }>(
     "/users",
     {
       schema: {
-        querystring: listUsersQuerySchema,
-        response: { 200: paginatedResponseSchema(userResponseSchema) },
+        querystring: ListUsersQuerySchema,
+        response: { 200: paginatedResponseSchema(UserResponseSchema) },
       },
     },
     async (request): Promise<PaginatedResponse<UserResponse>> => {
@@ -60,13 +60,13 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
 
   // POST /users - Create a new user
   fastify.post<{
-    Body: Static<typeof userCreateRequestSchema>;
+    Body: Static<typeof UserCreateRequestSchema>;
   }>(
     "/users",
     {
       schema: {
-        body: userCreateRequestSchema,
-        response: { 201: userResponseSchema },
+        body: UserCreateRequestSchema,
+        response: { 201: UserResponseSchema },
       },
     },
     async (request, reply): Promise<UserResponse> => {
@@ -88,13 +88,13 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
 
   // GET /users/:userId - Get a user by ID
   fastify.get<{
-    Params: Static<typeof userIdParamsSchema>;
+    Params: Static<typeof UserIdParamsSchema>;
   }>(
     "/users/:userId",
     {
       schema: {
-        params: userIdParamsSchema,
-        response: { 200: userResponseSchema },
+        params: UserIdParamsSchema,
+        response: { 200: UserResponseSchema },
       },
     },
     async (request): Promise<UserResponse> => {
@@ -118,15 +118,15 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
 
   // PATCH /users/:userId - Partially update a user
   fastify.patch<{
-    Params: Static<typeof userIdParamsSchema>;
-    Body: Static<typeof userPatchRequestSchema>;
+    Params: Static<typeof UserIdParamsSchema>;
+    Body: Static<typeof UserPatchRequestSchema>;
   }>(
     "/users/:userId",
     {
       schema: {
-        params: userIdParamsSchema,
-        body: userPatchRequestSchema,
-        response: { 200: userResponseSchema },
+        params: UserIdParamsSchema,
+        body: UserPatchRequestSchema,
+        response: { 200: UserResponseSchema },
       },
     },
     async (request): Promise<UserResponse> => {
@@ -152,12 +152,12 @@ export const userRoutes: FastifyPluginAsync<{ provider: TypeBoxTypeProvider }> =
 
   // DELETE /users/:userId - Delete a user
   fastify.delete<{
-    Params: Static<typeof userIdParamsSchema>;
+    Params: Static<typeof UserIdParamsSchema>;
   }>(
     "/users/:userId",
     {
       schema: {
-        params: userIdParamsSchema,
+        params: UserIdParamsSchema,
         response: { 204: Type.Null() },
       },
     },

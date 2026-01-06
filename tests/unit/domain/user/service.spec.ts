@@ -3,19 +3,23 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { User } from "@/domain/user/model.js";
 import type { UserRepository } from "@/domain/user/repo/base.js";
 import type { DatabaseContext } from "@/infrastructure/db/context.js";
-import type { TransactionManager } from "@/infrastructure/db/transaction-manager.js";
 import type { EventPublisher } from "@/infrastructure/messaging/publisher/base.js";
 
 import { ValidationError } from "@/domain/exceptions.js";
 import { UserService } from "@/domain/user/service.js";
 import { NotFoundError, DuplicateError, NoFieldsToUpdateError } from "@/infrastructure/db/exceptions.js";
+import {
+  TransactionManager,
+  TransactionManager as TransactionManagerImpl,
+} from "@/infrastructure/db/transaction-manager.js";
+import { TestContext, createTestContext } from "../../../utils/test-context.js";
 
 describe("UserService", () => {
-  let mockTransactionManager: TransactionManager;
+  let mockTransactionManager: TransactionManager<"test">;
   let mockEventPublisher: EventPublisher;
-  let mockUserRepository: UserRepository;
-  let mockContext: DatabaseContext;
-  let userService: UserService;
+  let mockUserRepository: UserRepository<DatabaseContext<"test">>;
+  let testContext: TestContext;
+  let userService: UserService<TransactionManager<"test">, "test">;
 
   const createMockUser = (overrides?: Partial<User>): User => {
     const now = new Date();
@@ -31,20 +35,13 @@ describe("UserService", () => {
   };
 
   beforeEach(() => {
-    // Create mock context
-    mockContext = {
-      __type: "test",
-      transaction: vi.fn(async <U>(fn: (ctx: DatabaseContext) => Promise<U>) => {
-        return fn(mockContext);
-      }),
-    } as DatabaseContext;
+    // Create test context
+    testContext = createTestContext();
 
-    // Create mock transaction manager
-    mockTransactionManager = {
-      transaction: vi.fn(async <U>(fn: (ctx: DatabaseContext) => Promise<U>) => {
-        return fn(mockContext);
-      }),
-    } as unknown as TransactionManager;
+    // Create transaction manager using the test context
+    mockTransactionManager = new TransactionManagerImpl(testContext);
+    // Spy on the transaction method for testing
+    vi.spyOn(mockTransactionManager, "transaction");
 
     // Create mock event publisher
     mockEventPublisher = {
@@ -61,7 +58,7 @@ describe("UserService", () => {
       delete: vi.fn(),
       list: vi.fn(),
       count: vi.fn(),
-    } as unknown as UserRepository;
+    } as unknown as UserRepository<DatabaseContext<"test">>;
 
     // Create service instance
     userService = new UserService(mockTransactionManager, mockEventPublisher, mockUserRepository);
@@ -77,9 +74,9 @@ describe("UserService", () => {
       const result = await userService.createUser(user.email, user.name, user.age);
 
       expect(result).toEqual(user);
-      expect(mockUserRepository.getByEmail).toHaveBeenCalledWith(mockContext, user.email);
+      expect(mockUserRepository.getByEmail).toHaveBeenCalledWith(testContext, user.email);
       expect(mockUserRepository.create).toHaveBeenCalledWith(
-        mockContext,
+        testContext,
         expect.objectContaining({
           email: user.email,
           name: user.name,
@@ -121,7 +118,7 @@ describe("UserService", () => {
       const result = await userService.createUser(user.email, user.name);
 
       expect(result.age).toBeNull();
-      expect(mockUserRepository.create).toHaveBeenCalledWith(mockContext, expect.objectContaining({ age: null }));
+      expect(mockUserRepository.create).toHaveBeenCalledWith(testContext, expect.objectContaining({ age: null }));
     });
   });
 
@@ -133,7 +130,7 @@ describe("UserService", () => {
       const result = await userService.getUser(user.id);
 
       expect(result).toEqual(user);
-      expect(mockUserRepository.getById).toHaveBeenCalledWith(mockContext, user.id);
+      expect(mockUserRepository.getById).toHaveBeenCalledWith(testContext, user.id);
     });
 
     it("should return null when user not found", async () => {
@@ -142,7 +139,7 @@ describe("UserService", () => {
       const result = await userService.getUser("non-existent-id");
 
       expect(result).toBeNull();
-      expect(mockUserRepository.getById).toHaveBeenCalledWith(mockContext, "non-existent-id");
+      expect(mockUserRepository.getById).toHaveBeenCalledWith(testContext, "non-existent-id");
     });
   });
 
@@ -159,7 +156,7 @@ describe("UserService", () => {
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
-        mockContext,
+        testContext,
         existingUser.id,
         expect.objectContaining({ email: "newemail@example.com" })
       );
@@ -185,7 +182,7 @@ describe("UserService", () => {
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
-        mockContext,
+        testContext,
         existingUser.id,
         expect.objectContaining({ name: "New Name" })
       );
@@ -210,7 +207,7 @@ describe("UserService", () => {
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
-        mockContext,
+        testContext,
         existingUser.id,
         expect.objectContaining({ age: 35 })
       );
@@ -233,7 +230,7 @@ describe("UserService", () => {
 
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.updatePartial).toHaveBeenCalledWith(
-        mockContext,
+        testContext,
         existingUser.id,
         expect.objectContaining({
           email: "newemail@example.com",
@@ -315,8 +312,8 @@ describe("UserService", () => {
       const result = await userService.listUsers(10, 0);
 
       expect(result).toEqual([users, total]);
-      expect(mockUserRepository.list).toHaveBeenCalledWith(mockContext, 10, 0);
-      expect(mockUserRepository.count).toHaveBeenCalledWith(mockContext);
+      expect(mockUserRepository.list).toHaveBeenCalledWith(testContext, 10, 0);
+      expect(mockUserRepository.count).toHaveBeenCalledWith(testContext);
     });
 
     it("should handle pagination correctly", async () => {
@@ -327,7 +324,7 @@ describe("UserService", () => {
       const result = await userService.listUsers(20, 40);
 
       expect(result).toEqual([users, 100]);
-      expect(mockUserRepository.list).toHaveBeenCalledWith(mockContext, 20, 40);
+      expect(mockUserRepository.list).toHaveBeenCalledWith(testContext, 20, 40);
     });
 
     it("should return empty array when no users exist", async () => {
@@ -348,8 +345,8 @@ describe("UserService", () => {
 
       await userService.deleteUser(user.id);
 
-      expect(mockUserRepository.getById).toHaveBeenCalledWith(mockContext, user.id);
-      expect(mockUserRepository.delete).toHaveBeenCalledWith(mockContext, user.id);
+      expect(mockUserRepository.getById).toHaveBeenCalledWith(testContext, user.id);
+      expect(mockUserRepository.delete).toHaveBeenCalledWith(testContext, user.id);
     });
 
     it("should throw NotFoundError when user does not exist", async () => {
@@ -380,7 +377,7 @@ describe("UserService", () => {
 
       await userService.getUser(user.id);
 
-      expect(mockUserRepository.getById).toHaveBeenCalledWith(mockContext, user.id);
+      expect(mockUserRepository.getById).toHaveBeenCalledWith(testContext, user.id);
     });
   });
 });

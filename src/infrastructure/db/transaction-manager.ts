@@ -1,14 +1,9 @@
-import type { DatabaseContext } from "./context.js";
+import { DatabaseContext } from "./context.js";
 
 /**
- * Transaction manager that works with DatabaseContext.
+ * Transaction manager for Kysely database contexts.
  *
- * This provides a higher-level abstraction for managing transactions,
- * allowing services to work with transactions without knowing the underlying
- * database implementation.
- *
- * @template TType - The type tag of the DatabaseContext this manager works with.
- *                   Type inference ensures compatibility with repositories.
+ * Provides a simple interface for executing operations within database transactions.
  */
 export class TransactionManager<TType extends string = string> {
   constructor(private readonly context: DatabaseContext<TType>) {}
@@ -25,7 +20,6 @@ export class TransactionManager<TType extends string = string> {
 
   /**
    * Get the underlying database context.
-   * Useful for type introspection and ensuring repository compatibility.
    */
   getContext(): DatabaseContext<TType> {
     return this.context;

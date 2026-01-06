@@ -2,7 +2,6 @@ import { randomUUID } from "crypto";
 
 import type { OptionalOrUnset, RequiredOrUnset } from "@/domain/types.js";
 import type { UserRepository } from "@/domain/user/repo/base.js";
-import type { DatabaseContext } from "@/infrastructure/db/context.js";
 import type { TransactionManager } from "@/infrastructure/db/transaction-manager.js";
 import type { EventPublisher } from "@/infrastructure/messaging/publisher/base.js";
 import { generateUserChanges } from "@/domain/user/diff.js";
@@ -14,13 +13,17 @@ import {
   validatePatchUserRequest,
 } from "@/domain/user/validators.js";
 import { NoFieldsToUpdateError } from "@/infrastructure/db/exceptions.js";
+import type { DatabaseContext } from "@/infrastructure/db/context.js";
 
 /**
  * User domain service.
+ *
+ * The database context type is inferred from the TransactionManager to ensure
+ * type safety between the transaction manager and repository.
  */
-export class UserService<TType extends string = string> {
+export class UserService<TManager extends TransactionManager<TType>, TType extends string = string> {
   constructor(
-    private readonly transactionManager: TransactionManager<TType>,
+    private readonly transactionManager: TManager,
     private readonly eventPublisher: EventPublisher,
     private readonly userRepository: UserRepository<DatabaseContext<TType>>
   ) {}

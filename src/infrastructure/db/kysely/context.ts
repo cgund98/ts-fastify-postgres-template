@@ -28,19 +28,15 @@ export class KyselyContext implements DatabaseContext<KyselyContextType> {
 
   /**
    * Execute a function within a transaction.
-   * If already in a transaction (Transaction<DB>), the function executes within the existing transaction.
-   * Otherwise, a new transaction is started.
+   * Starts a new transaction and executes the function within it.
+   *
+   * Note: Nested transactions are not supported. This method should only be called
+   * on contexts created from the database pool, not from within transaction callbacks.
    */
   async transaction<U>(fn: (ctx: DatabaseContext<KyselyContextType>) => Promise<U>): Promise<U> {
-    // If we're already in a transaction, Transaction doesn't have a transaction() method
-    // So we check if transaction() exists - if not, we're already in a transaction
-    if (!("transaction" in this.kyselyDb) || typeof (this.kyselyDb as Kysely<DB>).transaction !== "function") {
-      // Already in a transaction, execute directly
-      return fn(this);
-    }
-
-    // Otherwise, start a new transaction
-    return (this.kyselyDb as Kysely<DB>).transaction().execute(async (trx) => {
+    // Since nested transactions are not supported, this is always a Kysely instance
+    const kysely = this.kyselyDb as Kysely<DB>;
+    return kysely.transaction().execute(async (trx) => {
       const ctx = new KyselyContext(trx);
       return fn(ctx);
     });
@@ -53,24 +49,4 @@ export class KyselyContext implements DatabaseContext<KyselyContextType> {
  */
 export function isKyselyContext(ctx: DatabaseContext): ctx is KyselyContext {
   return ctx.__type === "kysely";
-}
-
-/**
- * Helper function to extract Kysely database instance from a DatabaseContext.
- *
- * This function uses type introspection to safely extract the Kysely instance,
- * throwing a descriptive error if the context is not a KyselyContext.
- *
- * @param ctx - The database context
- * @returns The Kysely database instance (may be a transaction)
- * @throws Error if the context is not a KyselyContext
- */
-export function getKyselyDb(ctx: DatabaseContext): Kysely<DB> | Transaction<DB> {
-  if (!isKyselyContext(ctx)) {
-    throw new Error(
-      `Expected KyselyContext (type: "kysely") but got context with type: "${ctx.__type}". ` +
-        `Make sure you're using the Kysely database implementation.`
-    );
-  }
-  return ctx.db;
 }
