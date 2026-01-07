@@ -3,8 +3,8 @@ import { SQSConsumer, type SQSConsumerConfig } from "@/infrastructure/messaging/
 
 import { getSettings } from "@/config/settings.js";
 import { UserEventType } from "@/domain/user/events/constants.js";
-import { UserCreatedEventHandler, UserUpdatedEventHandler } from "@/domain/user/events/handlers";
-import { UserCreatedEventSchema, UserUpdatedEventSchema } from "@/domain/user/events/schema";
+import { UserCreatedEventHandler, UserUpdatedEventHandler } from "@/domain/user/events/handlers/index.js";
+import { UserCreatedEventSchema, UserUpdatedEventSchema } from "@/domain/user/events/schema.js";
 import { getLogger } from "@/observability/logging.js";
 
 const settings = getSettings();

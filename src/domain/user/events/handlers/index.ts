@@ -1,2 +1,2 @@
-export { UserCreatedEventHandler } from "./user-created";
-export { UserUpdatedEventHandler } from "./user-updated";
+export { UserCreatedEventHandler } from "./user-created.js";
+export { UserUpdatedEventHandler } from "./user-updated.js";

@@ -8,7 +8,7 @@ import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 
 import { getSettings } from "@/config/settings.js";
 import { getLogger } from "@/observability/logging.js";
-import { kyselyDatabasePool } from "@/presentation/deps";
+import { kyselyDatabasePool } from "@/presentation/deps.js";
 import { handleDomainExceptions } from "@/presentation/exceptions.js";
 import { userRoutes } from "@/presentation/user/routes.js";
 

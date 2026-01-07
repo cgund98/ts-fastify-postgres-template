@@ -1,6 +1,6 @@
 import { Type, type Static } from "@sinclair/typebox";
 
-import { DateTimeSchema } from "../schemas";
+import { DateTimeSchema } from "../schemas.js";
 
 /**
  * User create request schema.

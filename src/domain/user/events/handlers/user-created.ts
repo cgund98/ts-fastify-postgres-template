@@ -1,7 +1,7 @@
-import type { UserCreatedEvent } from "../schema";
-import type { EventHandler } from "@/infrastructure/messaging/consumer/base";
+import type { UserCreatedEvent } from "../schema.js";
+import type { EventHandler } from "@/infrastructure/messaging/consumer/base.js";
 
-import { getLogger } from "@/observability/logging";
+import { getLogger } from "@/observability/logging.js";
 
 const logger = getLogger("UserCreatedEventHandler");
 
