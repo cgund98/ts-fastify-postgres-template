@@ -1,6 +1,5 @@
 import type { User } from "@/domain/user/model.js";
 import type { UserRepository } from "@/domain/user/repo/base.js";
-import type { DatabaseContext } from "@/infrastructure/db/context.js";
 
 import { NotFoundError, ValidationError } from "@/domain/exceptions.js";
 import type { RequiredOrUnset } from "@/domain/types.js";
@@ -16,19 +15,19 @@ function validateName(name: RequiredOrUnset<string>): void {
   }
 }
 
-interface ValidateEmailNotDuplicateParams {
-  userRepository: UserRepository;
-  ctx: DatabaseContext;
+interface ValidateEmailNotDuplicateParams<TContext> {
+  userRepository: UserRepository<TContext>;
+  ctx: TContext;
   email: RequiredOrUnset<string>;
   currentEmail: string;
 }
 
-async function validateEmailNotDuplicate({
+async function validateEmailNotDuplicate<TContext>({
   userRepository,
   ctx,
   email,
   currentEmail,
-}: ValidateEmailNotDuplicateParams): Promise<void> {
+}: ValidateEmailNotDuplicateParams<TContext>): Promise<void> {
   if (email === undefined) {
     return;
   }
@@ -41,19 +40,19 @@ async function validateEmailNotDuplicate({
   }
 }
 
-export interface ValidateCreateUserRequestParams {
-  ctx: DatabaseContext;
+export interface ValidateCreateUserRequestParams<TContext> {
+  ctx: TContext;
   email: string;
   name: string;
-  userRepository: UserRepository;
+  userRepository: UserRepository<TContext>;
 }
 
-export async function validateCreateUserRequest({
+export async function validateCreateUserRequest<TContext>({
   ctx,
   email,
   name,
   userRepository,
-}: ValidateCreateUserRequestParams): Promise<void> {
+}: ValidateCreateUserRequestParams<TContext>): Promise<void> {
   // Validate name
   if (!name.trim()) {
     throw new ValidationError("Name cannot be empty", "name");
@@ -66,21 +65,21 @@ export async function validateCreateUserRequest({
   }
 }
 
-export interface ValidatePatchUserRequestParams {
-  ctx: DatabaseContext;
+export interface ValidatePatchUserRequestParams<TContext> {
+  ctx: TContext;
   userId: string;
   email: RequiredOrUnset<string>;
   name: RequiredOrUnset<string>;
-  userRepository: UserRepository;
+  userRepository: UserRepository<TContext>;
 }
 
-export async function validatePatchUserRequest({
+export async function validatePatchUserRequest<TContext>({
   ctx,
   userId,
   email,
   name,
   userRepository,
-}: ValidatePatchUserRequestParams): Promise<User> {
+}: ValidatePatchUserRequestParams<TContext>): Promise<User> {
   // Validate user exists
   const user = await userRepository.getById(ctx, userId);
   if (user === null) {
@@ -101,10 +100,10 @@ export async function validatePatchUserRequest({
   return user;
 }
 
-export async function validateDeleteUserRequest(
-  ctx: DatabaseContext,
+export async function validateDeleteUserRequest<TContext>(
+  ctx: TContext,
   userId: string,
-  userRepository: UserRepository
+  userRepository: UserRepository<TContext>
 ): Promise<User> {
   const user = await userRepository.getById(ctx, userId);
   if (user === null) {

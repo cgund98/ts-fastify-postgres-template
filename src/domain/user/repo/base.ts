@@ -1,5 +1,4 @@
 import type { User, CreateUser, UserUpdate } from "@/domain/user/model.js";
-import type { DatabaseContext } from "@/infrastructure/db/context.js";
 
 /**
  * User repository interface.
@@ -7,7 +6,7 @@ import type { DatabaseContext } from "@/infrastructure/db/context.js";
  * @template TContext - The specific DatabaseContext type this repository works with.
  *                      Type inference ensures compatibility with transaction managers.
  */
-export interface UserRepository<TContext extends DatabaseContext = DatabaseContext> {
+export interface UserRepository<TContext> {
   create(ctx: TContext, createUser: CreateUser): Promise<User>;
   getById(ctx: TContext, userId: string): Promise<User | null>;
   getByEmail(ctx: TContext, email: string): Promise<User | null>;

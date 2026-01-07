@@ -1,10 +1,9 @@
 import { Kysely, PostgresDialect, type Transaction } from "kysely";
 import { Pool } from "pg";
 
-import { KyselyContext } from "./context.js";
-
 import type { DB } from "./schema.js";
 import type { Settings } from "@/config/settings.js";
+import KyselyTransactionManager from "./transaction-manager.js";
 
 /**
  * Kysely database pool manager.
@@ -45,30 +44,16 @@ export class KyselyDatabasePool {
     return this.db;
   }
 
+  // Fetch a new transaction manager for use in services.
+  getTransactionManager(): KyselyTransactionManager {
+    return new KyselyTransactionManager(this.getDatabase());
+  }
+
   getDatabase(): Kysely<DB> {
     if (!this.db) {
       throw new Error("Database not initialized. Call createDatabase first.");
     }
     return this.db;
-  }
-
-  /**
-   * Get a database context for use in repositories.
-   */
-  getContext(): KyselyContext {
-    const db = this.getDatabase();
-    return new KyselyContext(db);
-  }
-
-  /**
-   * Get a connection context (for transactions).
-   * This creates a new context that can be used within a transaction.
-   */
-  getConnectionContext(): KyselyContext {
-    const db = this.getDatabase();
-    // For connection-level operations, we still use the main database instance
-    // Transactions will be handled by the context's transaction method
-    return new KyselyContext(db);
   }
 
   async close(): Promise<void> {

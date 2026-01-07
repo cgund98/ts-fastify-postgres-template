@@ -2,24 +2,20 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import type { User } from "@/domain/user/model.js";
 import type { UserRepository } from "@/domain/user/repo/base.js";
-import type { DatabaseContext } from "@/infrastructure/db/context.js";
 import type { EventPublisher } from "@/infrastructure/messaging/publisher/base.js";
 
 import { ValidationError } from "@/domain/exceptions.js";
 import { UserService } from "@/domain/user/service.js";
 import { NotFoundError, DuplicateError, NoFieldsToUpdateError } from "@/infrastructure/db/exceptions.js";
-import {
-  TransactionManager,
-  TransactionManager as TransactionManagerImpl,
-} from "@/infrastructure/db/transaction-manager.js";
-import { TestContext, createTestContext } from "../../../utils/test-context.js";
+import type TransactionManager from "@/infrastructure/db/transaction-manager.js";
+import { TestContext, createTestContext, createTestTransactionManager } from "../../../utils/test-context.js";
 
 describe("UserService", () => {
-  let mockTransactionManager: TransactionManager<"test">;
+  let mockTransactionManager: TransactionManager<TestContext>;
   let mockEventPublisher: EventPublisher;
-  let mockUserRepository: UserRepository<DatabaseContext<"test">>;
+  let mockUserRepository: UserRepository<TestContext>;
   let testContext: TestContext;
-  let userService: UserService<TransactionManager<"test">, "test">;
+  let userService: UserService<TestContext>;
 
   const createMockUser = (overrides?: Partial<User>): User => {
     const now = new Date();
@@ -39,7 +35,7 @@ describe("UserService", () => {
     testContext = createTestContext();
 
     // Create transaction manager using the test context
-    mockTransactionManager = new TransactionManagerImpl(testContext);
+    mockTransactionManager = createTestTransactionManager(testContext);
     // Spy on the transaction method for testing
     vi.spyOn(mockTransactionManager, "transaction");
 
@@ -58,7 +54,7 @@ describe("UserService", () => {
       delete: vi.fn(),
       list: vi.fn(),
       count: vi.fn(),
-    } as unknown as UserRepository<DatabaseContext<"test">>;
+    } as unknown as UserRepository<TestContext>;
 
     // Create service instance
     userService = new UserService(mockTransactionManager, mockEventPublisher, mockUserRepository);
